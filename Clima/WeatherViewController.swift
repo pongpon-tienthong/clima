@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreLocation
+import Alamofire
 
 class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
@@ -29,8 +30,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-        //TODO:Set up the location manager here.
+        //Set up the location manager here.
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         locationManager.requestWhenInUseAuthorization()
@@ -41,9 +41,20 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     //MARK: - Networking
     /***************************************************************/
-    
+
     //Write the getWeatherData method here:
-    
+    func getWeatherData(url : String, parameters: [String: String]) {
+        Alamofire.request(url, method: .get, parameters: parameters).responseJSON {
+            response in
+            if response.result.isSuccess {
+                print("Success! Got the weather data")
+            }
+            else {
+                print("Error \(response.result.error)")
+                self.cityLabel.text = "Connection Issues"
+            }
+        }
+    }
 
     
     
@@ -74,7 +85,6 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     //MARK: - Location Manager Delegate Methods
     /***************************************************************/
     
-    
     //Write the didUpdateLocations method here:
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let location = locations[locations.count - 1]
@@ -86,18 +96,15 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
             let lon = String(location.coordinate.longitude)
             
             let params : [String : String] = ["lat" : lat, "lon" : lon, "appid" : APP_ID ]
+            getWeatherData(url: WEATHER_URL, parameters: params)
         }
     }
-    
     
     //Write the didFailWithError method here:
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         cityLabel.text = "Location Unavailable"
     }
-    
-    
-
     
     //MARK: - Change City Delegate methods
     /***************************************************************/
